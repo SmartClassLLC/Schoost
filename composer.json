@@ -11,6 +11,9 @@
             "email": "simsek97@gmail.com"
         }
     ],
+    "require": {
+        "php": ">=5.4"
+    },    
     "autoload": {
         "psr-4" : {
             "Schoost\\" : "src/"
