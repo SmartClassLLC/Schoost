@@ -78,7 +78,7 @@ class Personnel {
 		$dbi->orderBy("p.rehber", "desc");
 		$dbi->orderBy("p.ogretmen", "desc");
 		$dbi->orderBy("p.adi_soyadi", "asc");
-		if($this->userInfo) $personnel = $dbi->get(_PERSONEL_. " p", null, "p.*, u.userID, u.aid, u.userType");
+		if($this->userInfo) $personnel = $dbi->get(_PERSONEL_. " p", null, "p.*, u.id, u.aid, u.userType");
 		else $personnel = $dbi->get(_PERSONEL_. " p", null, "p.*");
 		
 		return $personnel;

@@ -180,6 +180,13 @@ class LMS extends Moodle {
         return $response;
     }
     
+    function simsGetLmsUser($criteria)
+    {
+        $response = $this->lmsGetUser($criteria);
+        
+        return $response;
+    }
+    
     function createStudentNo($stdno)
     {
         $strlen = strlen($stdno);

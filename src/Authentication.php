@@ -142,6 +142,7 @@ class Authentication extends LMS {
 		{
 			//set lms info
 			//$this->lmsSetSchoolInfo($this->userSchoolId);
+			
 			$this->lmsSetSchoolInfo($authenticationInfo["ySubeKodu"]);
 			
 			//crate lms user if exists
@@ -149,6 +150,7 @@ class Authentication extends LMS {
 				'key'   => 'username',
 				'value' => $authenticationInfo["aid"]
 			);
+			
 			$getLmsUser = $this->lmsGetUser($criteria);
 			
 			if(empty($getLmsUser["users"][0]))
@@ -176,6 +178,7 @@ class Authentication extends LMS {
 				}
 				
 			}
+			
 		}
 		
 		//return info

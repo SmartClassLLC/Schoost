@@ -17,6 +17,8 @@ class Core
     public $currentLangInfo = array();
     public $freqMenus = array();
     public $mainMenus = array();
+    public $students = array();
+    public $currentStudent = array();
     public $seasons = array();
     public $campuses = array();
     public $campusInfo = array();
@@ -126,7 +128,7 @@ class Core
 	
 	function getSchools()
 	{
-		global $dbi, $ySubeKodu, $yCampusID, $dbname2, $aid, $userType, $myStudent, $currentSeasonInfo, $globalUserType, $globalUserFolder, $globalUserManagerMenu, $availableLanguages, $currentlang, $generalSettings, $schoolUrl, $schoolSimsUrl, $domain;
+		global $dbi, $ySubeKodu, $yCampusID, $dbname2, $aid, $userType, $myStudent, $currentSeasonInfo, $globalUserType, $globalUserFolder, $globalUserManagerMenu, $availableLanguages, $currentlang, $generalSettings, $schoolUrl, $schoolSimsUrl, $domain, $userPersonnelInfo;
 
         if($domain == $_SERVER["SERVER_NAME"])
         {
@@ -145,7 +147,9 @@ class Core
         $availableSchools = explode(",", $seasonInfo["gorebilenSubeler"]);
         
         //check the number of schools
-        $nofSchoolsArray = $dbi->where("subeID", $availableSchools, "IN")->getValue(_SUBELER_, "subeID", null);
+        $dbi->where("subeID", $availableSchools, "IN");
+        $dbi->where("stype", "school");
+        $nofSchoolsArray = $dbi->getValue(_SUBELER_, "subeID", null);
         $this->nofSchools = empty($nofSchoolsArray) ? 0 : sizeof($nofSchoolsArray);
         
         //check if there is any additional campuses
@@ -185,6 +189,12 @@ class Core
         			
         			$this->campuses[$k]["schools"] = $schools;
         		}
+        		
+                //non campus schools
+                $dbi->where("campusID", "0");
+                $dbi->where("subeID", $availableSchools, "IN");
+                $dbi->orderBy("subeID", "asc");
+                $this->nonCampusSchools = $dbi->get(_SUBELER_, null, "subeID, menuSubeAdi");
         	}
         }
         else if($globalUserFolder == "campus")
@@ -215,9 +225,8 @@ class Core
     			
     			$this->campuses[$k]["schools"] = $schools;
     		}
-            
         }
-        else
+        else if ($globalUserFolder == "school")
         {
         	$dbi->orderBy("Id","asc");
         	$this->campuses = $dbi->get(_CAMPUSES_, null, "Id, campusTitle");
@@ -230,13 +239,30 @@ class Core
         		
         		$this->campuses[$k]["schools"] = $schools;
         	}
+        	
+            //non campus schools
+            $dbi->where("campusID", "0");
+            $dbi->where("subeID", $availableSchools, "IN");
+            $dbi->orderBy("subeID", "asc");
+            $this->nonCampusSchools = $dbi->get(_SUBELER_, null, "subeID, menuSubeAdi");
         }
-        
-        //non campus schools
-        $dbi->where("campusID", "0");
-        $dbi->where("subeID", $availableSchools, "IN");
-        $dbi->orderBy("subeID", "asc");
-        $this->nonCampusSchools = $dbi->get(_SUBELER_, null, "subeID, menuSubeAdi");
+        else if ($globalUserFolder == "teacher")
+        {
+            //set teachers own school
+            $tschools = array($userPersonnelInfo["SubeKodu"]);
+            
+            //non campus schools
+            $dbi->where("active", "on");
+            $dbi->where("perId", $userPersonnelInfo["perID"]);
+            $transfers = $dbi->getValue(_PERSONEL_TRANSFER_, "transferSchoolId", null);
+            
+            if(!empty($transfers)) $tschools = array_merge($tschools, $transfers);
+            
+            //schools
+            $dbi->where("subeID", $tschools, "IN");
+            $dbi->orderBy("subeID", "asc");
+            $this->nonCampusSchools = $dbi->get(_SUBELER_, null, "subeID, menuSubeAdi");
+        }
     }
 	
 	function getLanguages()
@@ -259,8 +285,33 @@ class Core
         $this->currentLangInfo = $clang;
 	}
 	
-	function getMainMenus() {
+	function getStudents()
+	{
+	    global $dbi, $aid, $ogrID, $globalZone;
 	    
+	    if($globalZone != "parent") return false;
+	    
+    	$dbi->join(_OGRENCILER_. " s", "s.ogrID=p.ogrID", "INNER");
+    	$dbi->join(_BATCHES_. " b", "b.sinifID=s.SinifKodu", "LEFT");
+    	$dbi->where("s.KayitliMi", "1");
+    	$dbi->where("p.v_tc_kimlik_no", $aid);
+    	$dbi->orderBy("s.Adi", "ASC");
+    	$dbi->orderBy("s.IkinciAdi", "ASC");
+    	$dbi->orderBy("s.Soyadi", "ASC");
+    	$parentStudents = $dbi->get(_VELILER_. " p", null, "s.ogrID, s.Adi, s.IkinciAdi, s.Soyadi, s.Foto, s.SubeKodu, b.sinifAdi");
+
+        foreach($parentStudents as $k => $parentStudent)
+        {
+            $parentStudents[$k]["fullName"] = fnStudentName($parentStudent["Adi"], $parentStudent["IkinciAdi"], $parentStudent["Soyadi"]);
+            if($parentStudent["ogrID"] == $ogrID) $currentStdId = $k; 
+        }
+        
+        $this->students = $parentStudents;
+        $this->currentStudent = $parentStudents[$currentStdId];
+	}
+	
+	function getMainMenus()
+	{
 	    global $dbi, $dbnamePrefix, $aid, $ySubeKodu, $yCampusID, $userType, $simsDate, $genelAyarlar, $partnerId, $integrations, $integrationSchoolParameters, $globalUserFolder, $globalUserManagerMenu;
 		
 				
@@ -484,6 +535,9 @@ class Core
 	    
 	    //get languages
 	    $this->getLanguages();
+	    
+	    //get students
+	    $this->getStudents();
 	    
 	    //get menus
 	    $this->getMainMenus();
