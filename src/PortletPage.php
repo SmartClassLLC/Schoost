@@ -103,6 +103,12 @@ class PortletPage {
 	}
 
     /* function */
+	function getPage()
+	{
+		return get_object_vars($this);
+	}
+	
+    /* function */
 	function generatePage($extra = array())
 	{
 		global $theme;
