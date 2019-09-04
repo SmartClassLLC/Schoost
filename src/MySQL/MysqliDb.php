@@ -13,6 +13,8 @@
  * @version   2.8-master
  */
 
+namespace Schoost\MySQL;
+
 class MysqliDb
 {
 
