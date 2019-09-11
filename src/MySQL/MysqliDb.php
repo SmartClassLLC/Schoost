@@ -231,9 +231,9 @@ class MysqliDb
      * @param string $db
      * @param int $port
      * @param string $charset
-     * @params string $socket
+     * @param string $socket
      */
-    public function __construct($host = null, $username = null, $password = null, $db = null, $port = null, $charset = 'utf8', $socket = null)
+    public function __construct($host = "127.0.0.1", $username = "root", $password = "mysql", $db = "dev_main", $port = null, $charset = 'utf8', $socket = null)
     {
         $isSubQuery = false;
 
@@ -274,7 +274,7 @@ class MysqliDb
     /**
      * A method to connect to the database
      * 
-     * @throws Exception
+     * @throws \Exception
      * @return void
      */
     public function connect()
@@ -284,13 +284,13 @@ class MysqliDb
         }
 
         if (empty($this->host) && empty($this->socket)) {
-            throw new Exception('MySQL host or socket is not set');
+            throw new \Exception('MySQL host or socket is not set');
         }
 
-        $this->_mysqli = new mysqli($this->host, $this->_username, $this->_password, $this->db, $this->port, $this->socket);
+        $this->_mysqli = new \mysqli($this->host, $this->_username, $this->_password, $this->db, $this->port, $this->socket);
 
         if ($this->_mysqli->connect_error) {
-            throw new Exception('Connect Error ' . $this->_mysqli->connect_errno . ': ' . $this->_mysqli->connect_error, $this->_mysqli->connect_errno);
+            throw new \Exception('Connect Error ' . $this->_mysqli->connect_errno . ': ' . $this->_mysqli->connect_error, $this->_mysqli->connect_errno);
         }
 
         if ($this->charset) {
@@ -314,8 +314,9 @@ class MysqliDb
 
     /**
      * A method to get mysqli object or create it in case needed
-     * 
+     *
      * @return mysqli
+     * @throws \Exception
      */
     public function mysqli()
     {
@@ -328,7 +329,7 @@ class MysqliDb
     /**
      * A method to change the default database
      *
-     * @throws Exception
+     * @throws \Exception
      * @return void
      */
     public function selectdb($db)
@@ -430,14 +431,15 @@ class MysqliDb
         return $this;
     }
 
-	/**
-	 * Pushes a unprepared statement to the mysqli stack.
-	 * WARNING: Use with caution.
-	 * This method does not escape strings by default so make sure you'll never use it in production.
-	 * 
-	 * @author Jonas Barascu
-	 * @param [[Type]] $query [[Description]]
-	 */
+    /**
+     * Pushes a unprepared statement to the mysqli stack.
+     * WARNING: Use with caution.
+     * This method does not escape strings by default so make sure you'll never use it in production.
+     *
+     * @param [[Type]] $query [[Description]]
+     * @throws \Exception
+     * @author Jonas Barascu
+     */
 	private function queryUnprepared($query)
 	{	
 		// Execute query
@@ -445,7 +447,7 @@ class MysqliDb
 
 		// Failed?
 		if(!$stmt){
-			throw new Exception("Unprepared Query Failed, ERRNO: ".$this->mysqli()->errno." (".$this->mysqli()->error.")", $this->mysqli()->errno);
+			throw new \Exception("Unprepared Query Failed, ERRNO: ".$this->mysqli()->errno." (".$this->mysqli()->error.")", $this->mysqli()->errno);
 		};
 		
 		// return stmt for future use
@@ -1485,11 +1487,11 @@ class MysqliDb
      * This helper method takes care of prepared statements' "bind_result method
      * , when the number of variables to pass is unknown.
      *
-     * @param mysqli_stmt $stmt Equal to the prepared statement object.
+     * @param \mysqli_stmt $stmt Equal to the prepared statement object.
      *
      * @return array The results of the SQL fetch.
      */
-    protected function _dynamicBindResults(mysqli_stmt $stmt)
+    protected function _dynamicBindResults(\mysqli_stmt $stmt)
     {
         $parameters = array();
         $results = array();
@@ -1863,7 +1865,7 @@ class MysqliDb
             $msg = $this->mysqli()->error . " query: " . $this->_query;
             $num = $this->mysqli()->errno;
             $this->reset();
-            throw new Exception($msg, $num);
+            throw new \Exception($msg, $num);
         }
 
         if ($this->traceEnabled) {
