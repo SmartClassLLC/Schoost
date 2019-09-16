@@ -14,7 +14,7 @@ namespace Schoost;
 class Users {
 
     private $userId = 0;
-    
+
     /* function */
 	function setUserId($id)
 	{
@@ -32,8 +32,8 @@ class Users {
     /* function */
 	function getUserInfo()
 	{
-        global $dbi;
-
+		global $dbi;
+		
 		//join user types
 		$dbi->join(_USER_TYPES_. " ut", "ut.typeID=u.userType", "LEFT");
 
@@ -42,14 +42,13 @@ class Users {
 		
 		//get user info            
 		$dbi->where("u.aid", $this->userId);
-		$userInfo = $dbi->getOne(_USERS_. " u", "u.*, ut.userType as userTypeTitle, s.subeAdi as schoolTitle");
-		
-		//translate user type title
-		$userInfo["userTypeTitle"] = translateWord($userInfo["userTypeTitle"]);
-		
+		$userInfo = $dbi->getOne(_USERS_. " u", "u.*, ut.userType as userTypeTitle, s.subeAdi as schoolTitle, s.kucukLogo as schoolLogo");
+
 		//fix school title
 		if(empty($userInfo["schoolTitle"]) && empty($userInfo["ySubeKodu"])) $userInfo["schoolTitle"] = _GENEL_MUDURLUK;
-		
+
+		$userInfo["userTypeTitle"] = translateWord($userInfo["userTypeTitle"]);
+
 		return $userInfo;
 	}
 
@@ -57,7 +56,7 @@ class Users {
 	function getPersonnelInfo()
 	{
         global $dbi, $globalZone;
-        
+
         if($globalZone == "admin") return false;
         
         //join blood type
@@ -80,5 +79,19 @@ class Users {
 		
 		return $personnelInfo;
 	}
+
+    /**
+     * @param $newPassword
+     * @return bool
+     */
+    function changeUserPassword($newPassword)
+    {
+    	global $dbi;
+    	
+        $dbi->where("aid", $this->userId);
+        $result = $dbi->update(_USERS_, array("pwd" => md5($newPassword), "pwdPlain" => $newPassword));
+
+        return $result;
+    }
 
 }

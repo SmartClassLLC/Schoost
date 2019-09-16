@@ -65,7 +65,7 @@ class Content {
 				<button class="btn btn-xs btn-primary"><i class="fa fa-save"></i></button>
 			</div>
 		</div>
-		<?
+		<?php
 	}
 
 	/* function */
@@ -260,6 +260,6 @@ class Content {
 			?>
 			
 		</div>
-		<?
+		<?php
 	}
 }

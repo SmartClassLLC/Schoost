@@ -94,6 +94,7 @@ class Authentication extends LMS {
 		global $dbi, $globalZone;
 		
 		$dbi->join(_USER_TYPES_. " t", "t.typeID=u.userType", "INNER");
+		$dbi->join(_SUBELER_. " s", "s.subeID=u.ySubeKodu", "LEFT");
 		
 		if($this->authDbStdSsnSetting == "on")
 		{
@@ -118,7 +119,10 @@ class Authentication extends LMS {
 		
 		$dbi->where("u.active", "1");
 		$dbi->where("t.loginType", $this->authLoginTypes, "IN");
-		$authenticationInfo = $dbi->getOne(_USERS_. " u", "u.aid, u.pwd, u.email, u.picture, u.name, u.lastName, u.ySubeKodu, u.campusID, u.userType, u.expireDate, u.firebaseId, u.firebaseToken, u.pwdPlain, u.id, t.loginType");
+		$authenticationInfo = $dbi->getOne(_USERS_. " u", "u.aid, u.pwd, u.email, u.picture, u.name, u.lastName, u.ySubeKodu, s.subeID, s.stype, u.userType, u.expireDate, u.firebaseId, u.firebaseToken, u.pwdPlain, u.id, t.loginType");
+		
+		//make school id 0 if it is null for hq
+		if(is_null($authenticationInfo["ySubeKodu"])) $authenticationInfo["ySubeKodu"] = "0";
 		
 		//check picture
 		if(empty($authenticationInfo["picture"])) $authenticationInfo["picture"] = "https://schst.in/nopicture";
@@ -155,18 +159,45 @@ class Authentication extends LMS {
 			
 			if(empty($getLmsUser["users"][0]))
 			{
-				
-				$users = array(
-				    'username'      => $authenticationInfo["aid"],
-				    'password'      => $authenticationInfo["pwdPlain"],
-				    'firstname'     => $authenticationInfo["name"],
-				    'lastname'      => $authenticationInfo["lastName"],
-				    'email'         => $authenticationInfo["email"],
-				    'studentno'		=> $this->createStudentNo($authenticationInfo["id"]),
-				    'auth'			=> 'lti'
-				);
-				
-				$createLMSUser = $this->lmsCreateUsers($users);
+				if($authenticationInfo["ySubeKodu"] == "0" || $authenticationInfo["stype"] == "campus")
+				{
+					$insKeys = array();
+
+					$moodleInsKey = $dbi->get(_MOODLE_CONFIG_, null, "moodleInsKey");
+					foreach($moodleInsKey as $moodleKey)
+					{
+					    $insKeys[] = array('institutionkey' => $moodleKey["moodleInsKey"]);
+					}
+					
+					$users = array(
+					    'username'      => $authenticationInfo["aid"],
+					    'password'      => $authenticationInfo["pwdPlain"],
+					    'firstname'     => $authenticationInfo["name"],
+					    'lastname'      => $authenticationInfo["lastName"],
+					    'email'         => $authenticationInfo["email"],
+					    'auth'			=> 'lti'
+					);
+					
+					$createLMSUser = $this->lmsCreateManagerUsers($insKeys, $users);
+					
+				}
+				else
+				{
+					$users = array(
+					    'username'      => $authenticationInfo["aid"],
+					    'password'      => $authenticationInfo["pwdPlain"],
+					    'firstname'     => $authenticationInfo["name"],
+					    'lastname'      => $authenticationInfo["lastName"],
+					    'email'         => $authenticationInfo["email"],
+					    'auth'			=> 'lti'
+					);
+					
+					//If User Type is Student
+					if($authenticationInfo["userType"] == "8") $users["studentno"] = $this->createStudentNo($authenticationInfo["id"]);
+					
+					$createLMSUser = $this->lmsCreateUsers($users);
+					
+				}
 				
 				if(!empty($createLMSUser))
 				{
@@ -176,7 +207,21 @@ class Authentication extends LMS {
 					$dbi->where("id", $authenticationInfo["id"]);
 					$update = $dbi->update(_USERS_, $queryData);
 				}
+			}
+			else
+			{
+				$dbi->where("aid", $authenticationInfo["aid"]);
+				$dbi->where("id", $authenticationInfo["id"]);
+				$getLmsUserId = $dbi->getValue(_USERS_, "lmsUserId");
 				
+				if(empty($getLmsUserId))
+				{
+					$queryData = array('lmsUserId' => $getLmsUser["users"][0]["id"]);
+					
+					$dbi->where("aid", $authenticationInfo["aid"]);
+					$dbi->where("id", $authenticationInfo["id"]);
+					$update = $dbi->update(_USERS_, $queryData);
+				}
 			}
 			
 		}

@@ -84,11 +84,11 @@ class Courses {
 		if(!empty($filters))
 		{
 			if(!empty($filters["daterange"])) {
-				if(!empty($filters["daterange"]["startDate"])) $dbi->where("g.kursBaslangic", $startDate, ">=");
-				if(!empty($filters["daterange"]["endDate"])) $dbi->where("g.kursBaslangic", $endDate, "<=");
+				if(!empty($filters["daterange"]["startDate"])) $dbi->where("g.kursBaslangic", $filters["daterange"]["startDate"], ">=");
+				if(!empty($filters["daterange"]["endDate"])) $dbi->where("g.kursBaslangic", $filters["daterange"]["endDate"], "<=");
 			}
-			if(!empty($filters["gradeLevels"])) $dbi->where("g.seviyeKodu", $gradeLevels, "IN");
-			if(!empty($filters["tagCourses"])) $dbi->where("g.kursID", $tagCourses, "IN");
+			if(!empty($filters["gradeLevels"])) $dbi->where("g.seviyeKodu", $filters["gradeLevels"], "IN");
+			if(!empty($filters["tagCourses"])) $dbi->where("g.kursID", $filters["tagCourses"], "IN");
 		}
 
 		//other filters		

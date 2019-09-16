@@ -16,7 +16,7 @@ class Questions {
 	/* function */
 	function getAllQuestions($authorEmail, $subjectId = 0)
 	{
-        global $dbi, $ySubeKodu;
+            global $dbi, $ySubeKodu;
 
 		$dbi->join(_DERS_BRANSLARI_. " s", "s.bID=q.subjectId", "LEFT");
 		$dbi->where("(q.author=? OR q.public=?)", array("$authorEmail", "on"));
@@ -44,14 +44,14 @@ class Questions {
 				<h3 class="panel-title">
 					<span class="badge"># <?=$question["id"]?></span>
 					<span class="badge" style="background-color: #ed6b75 !important"><?=$question["bransAdi"]?></span>
-					<?
+					<?php
 					if(!empty($gradeLevels))
 					{
 						foreach($gradeLevels as $gradeLevel)
 						{
 							?>
 							<span class="badge" style="background-color: #f1c40f !important"><?=SeviyeAdi($gradeLevel)?></span>
-							<?
+							<?php
 						}
 					}
 					?>
@@ -65,7 +65,7 @@ class Questions {
 				<button class="btn btn-xs btn-primary"><i class="fa fa-save"></i></button>
 			</div>
 		</div>
-		<?
+		<?php
 	}
 
 	/* function */
@@ -82,26 +82,26 @@ class Questions {
 			<div class="panel-heading">
 				
 				<h3 class="panel-title">
-					<?
+					<?php
 					if(!empty($orderNumber))
 					{
 						?>
 						<span class="badge" style="background-color: #337ab7 !important"># <?=$orderNumber?></span>
-						<?
+						<?php
 					}
-
-					if($questionNumber)
+                                        
+                                        if($questionNumber)
 					{
 						?>
 						<span class="badge">q # <?=$question["id"]?></span>
-						<?
+						<?php
 					}
 					
 					if($subjectTitle)
 					{
 						?>
 						<span class="badge" style="background-color: #ed6b75 !important"><?=$question["bransAdi"]?></span>
-						<?
+						<?php
 					}
 					
 					if($grades AND !empty($gradeLevels))
@@ -110,7 +110,7 @@ class Questions {
 						{
 							?>
 							<span class="badge" style="background-color: #f1c40f !important"><?=SeviyeAdi($gradeLevel)?></span>
-							<?
+							<?php
 						}
 					}
 
@@ -132,26 +132,26 @@ class Questions {
 					
 					<div class="pull-right">
 						
-						<?
+						<?php
 						if($removeButton && !$evaluated)
 						{
 							?>
 							<a href="#" class="badge sims-question-remove" data-question-remove-id="<?=$removeId?>" style="background-color: #ed6b75 !important"><i class="fa fa-trash"></i> <?=_REMOVE?></a>
-							<?
+							<?php
 						}
 
 						if($dragButton && !$evaluated)
 						{
 							?>
 							<span class="badge sims-question-drag"><i class="fa fa-arrows-alt"></i> <?=_DRAG?></span>
-							<?
+							<?php
 						}
 						
 						if($addToExamButton)
 						{
 							?>
 							<a href="#" class="badge sims-question-add2exam" data-question-id="<?=$question["id"]?>" style="background-color: #36c6d3 !important"><i class="fa fa-plus"></i> <?=_ADD?></a>
-							<?
+							<?php
 						}
 						?>
 						
@@ -163,7 +163,7 @@ class Questions {
 			
 			<div class="panel-body">
 				
-				<?
+				<?php
 				
 				echo $question["content"];
 				
@@ -175,14 +175,14 @@ class Questions {
 							<div class="input-group" style="width: <? if($evaluated) echo "100px"; else echo "150px"; ?>">
 								<span class="input-group-addon text-blue text-bold"><?=_POINT?></span>
 								<input type="text" class="form-control text-blue text-bold" name="questionPoint" value="<?=$questionPoint?>" autocomplete="off" <? if($evaluated) echo "disabled"; ?>>
-								<?
+								<?php
 								if(!$evaluated)
 								{
 									?>
 									<span class="input-group-btn">
 										<button class="btn btn-default btn-sims-save-question-point text-blue text-bold" type="button"><i class="fa fa-save"></i></button>
 									</span>
-									<?
+									<?php
 								}
 								?>
 							</div>						
@@ -190,7 +190,7 @@ class Questions {
 						<input type="hidden" name="action" value="saveSubjectQuestionPoint">
 						<input type="hidden" name="id" value="<?=$question["sqId"]?>">
 					</form>
-					<?
+					<?php
 				}
 				
 				if($questionTaxonomy !== "off")
@@ -200,29 +200,29 @@ class Questions {
 					<form action="index.php?op=addExam" type="POST">
 						<div class="pull-right">
 							<div class="btn-group">
-								<?
+								<?php
 								if($evaluated)
 								{
 									?>
 									<button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false"><span class="taxonomy-title"><?=$selectedTaxonomy?></span></button>
-									<?
+									<?php
 								}
 								else
 								{
 									?>
 									<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="taxonomy-title"><?=$selectedTaxonomy?></span> <span class="caret"></span></button>
 									<ul class="dropdown-menu dropdown-menu-right">
-										<?
+										<?php
 										$taxonomies = $dbi->get(_BLOOM_TAXONOMY_);
 										foreach ($taxonomies as $taxonomy)
 										{
 											?>
 											<li><a href="#" class="link-sims-taxonomy" data-taxonomy-id="<?=$taxonomy["id"]?>"><i class="fa fa-fw fa-cube"></i> <?=translateWord($taxonomy["taxonomy"])?></a></li>
-											<?
+											<?php
 										}
 										?>
 									</ul>
-									<?
+									<?php
 								}
 								?>
 							</div>						
@@ -230,13 +230,13 @@ class Questions {
 						<input type="hidden" name="action" value="saveSubjectQuestionTaxonomy">
 						<input type="hidden" name="id" value="<?=$question["sqId"]?>">
 					</form>
-					<?
+					<?php
 				}
 				?>
 
 			</div>
 			
-			<?
+			<?php
 			if($solution)
 			{
 				?>
@@ -255,11 +255,11 @@ class Questions {
 					</form>
 					
 				</div>
-				<?
+				<?php
 			}
 			?>
 			
 		</div>
-		<?
+		<?php
 	}
 }

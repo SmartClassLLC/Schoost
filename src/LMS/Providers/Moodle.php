@@ -13,6 +13,7 @@ class Moodle implements LmsProvider {
     private $setInstitutionKey = "";
     private $serverUrl = "";
     private $schoolId = "";
+    private $configTable = _MOODLE_CONFIG_;
     
 	function __construct()
 	{
@@ -24,20 +25,25 @@ class Moodle implements LmsProvider {
         $this->restformat = ($this->returnformat == 'json') ? '&moodlewsrestformat=' . $this->returnformat : '';
 	}
 	
+	function setConfigTable($table)
+	{
+	    $this->configTable = $table;    
+	}
+	
 	function lmsSetSchoolInfo($scId)
 	{
 		global $dbi, $globalZone;
 
-        $this->schoolId = $scId;
+        if(!empty($scId)) $this->schoolId = $scId;
         
         $moodleSettings = array();        
         if($globalZone != "admin")
         {
     		//if($scId > 0) $dbi->where("branchID", array("0", $scId), "IN");
             //else $dbi->where("branchID", $scId);
-            if($scId > 0) $dbi->where("branchID", $this->schoolId);
+            if($this->schoolId > 0) $dbi->where("branchID", $this->schoolId);
             $dbi->orderBy("branchID", "desc");
-            $moodleSettings = $dbi->getOne(_MOODLE_CONFIG_);
+            $moodleSettings = $dbi->getOne($this->configTable);
         }
         
         if(empty($moodleSettings)) return "noconfig";

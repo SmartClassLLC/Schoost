@@ -86,7 +86,17 @@ class ModalPage {
 		$loader = new \Twig\Loader\FilesystemLoader('themes/' . $theme . '/templates');
 		$twig = new \Twig\Environment($loader, ['cache' => false]);
 		
-		$modal = $twig->render($this->mdTemplate, ['modal' => ['id' => $this->id, 'type' => $this->type, 'title' => $this->title, 'titleIcon' => $this->titleIcon, 'titleClass' => $this->titleClass], 'form' => $this->form, 'extra' => $extra]);
+		$modal = $twig->render($this->mdTemplate, [
+			'modal' => [
+				'id' => $this->id, 
+				'type' => $this->type, 
+				'title' => $this->title, 
+				'titleIcon' => $this->titleIcon, 
+				'titleClass' => $this->titleClass
+			], 
+			'form' => $this->form, 
+			'extra' => $extra
+		]);
 		
 		return $modal;
 	}

@@ -2,6 +2,8 @@
 
 namespace Schoost\LMS;
 
+use Schoost\LMS\Providers\Moodle;
+
 //get lms provider
 /*
 if($globalZone != "admin")
@@ -15,18 +17,44 @@ if($globalZone != "admin")
 if(empty($lmsProvider)) $lmsProvider = "Moodle";
 */
 
-//include the lms provider class
-//include "Providers/Moodle.php";
-use Schoost\LMS\Providers\Moodle;
-
 class LMS extends Moodle {
 
     private $batchId = "";
+    private $usersTable = _USERS_;
+    private $studentsTable = _OGRENCILER_;
+    private $batchesTable = _BATCHES_;
+    private $personnelTable = _PERSONEL_;
+    private $classTeachersTable = _CLASS_TEACHERS_;
 
     function __construct() {
         parent::__construct();
     }
     
+    function setUsersTable($table)
+    {
+        $this->usersTable = $table;
+    }
+
+    function setStudentsTable($table)
+    {
+        $this->studentsTable = $table;
+    }
+
+    function setBatchesTable($table)
+    {
+        $this->batchesTable = $table;
+    }
+
+    function setPersonnelTable($table)
+    {
+        $this->personnelTable = $table;
+    }
+
+    function setClassTeachersTable($table)
+    {
+        $this->classTeachersTable = $table;
+    }
+
     function simsSetBatchId($batchId)
     {
         $this->batchId = $batchId;    
@@ -66,10 +94,10 @@ class LMS extends Moodle {
         }
         
         $dbi->where("aid", $stds, "IN");
-        $dbi->where("ySubeKodu", $this->schoolId);
+        //$dbi->where("ySubeKodu", $this->schoolId);
         //$dbi->where("ySubeKodu", $ySubeKodu);
-        $dbi->where("lmsUserId", "0", "!=");
-        $getLmsUserId = $dbi->get(_USERS_, NULL, "lmsUserId");
+        $dbi->where("lmsUserId", "", "!=");
+        $getLmsUserId = $dbi->get($this->usersTable, NULL, "lmsUserId");
         
         foreach($getLmsUserId as $lmsUser)
         {
@@ -78,7 +106,7 @@ class LMS extends Moodle {
         		$lmsUserIds[] = array('userid' => $lmsUser["lmsUserId"]);
         	}
         }
-        
+        //print_r($this->schoolId);
         if(!empty($lmsUserIds))
         {
             $response = $this->lmsBulkAssignBatchmembers($this->batchId, $lmsUserIds);
@@ -100,14 +128,14 @@ class LMS extends Moodle {
         
         $dbi->where("ogrID", $stdId);
 		//$dbi->where("SubeKodu", $ySubeKodu);
-		$dbi->where("ySubeKodu", $this->schoolId);
-		$stdTc = $dbi->getValue(_OGRENCILER_, "TCKimlikNo");
+		//$dbi->where("ySubeKodu", $this->schoolId);
+		$stdTc = $dbi->getValue($this->studentsTable, "TCKimlikNo");
 
 		$dbi->where("aid", $stdTc);
         //$dbi->where("ySubeKodu", $ySubeKodu);
-        $dbi->where("ySubeKodu", $this->schoolId);
-        $dbi->where("lmsUserId", "0", "!=");
-        $getLmsUserId = $dbi->getValue(_USERS_, "lmsUserId");
+        //$dbi->where("ySubeKodu", $this->schoolId);
+        $dbi->where("lmsUserId", "", "!=");
+        $getLmsUserId = $dbi->getValue($this->usersTable, "lmsUserId");
 
         if(!in_array($getLmsUserId, $batchMembers))
         {
@@ -125,8 +153,8 @@ class LMS extends Moodle {
         
         $dbi->where("sinifID", $oldBatchId);
     	//$dbi->where("subeKodu", $ySubeKodu);
-    	$dbi->where("ySubeKodu", $this->schoolId);
-    	$lmsBatchId = $dbi->getValue(_BATCHES_, "lmsBatchId");
+    	//$dbi->where("ySubeKodu", $this->schoolId);
+    	$lmsBatchId = $dbi->getValue($this->batchesTable, "lmsBatchId");
 
         $getBatchMembers = $this->lmsGetBatchmembers($lmsBatchId);
 
@@ -137,14 +165,14 @@ class LMS extends Moodle {
 
         $dbi->where("ogrID", $stdId);
 		//$dbi->where("SubeKodu", $ySubeKodu);
-		$dbi->where("ySubeKodu", $this->schoolId);
-		$stdTc = $dbi->getValue(_OGRENCILER_, "TCKimlikNo");
+		//$dbi->where("ySubeKodu", $this->schoolId);
+		$stdTc = $dbi->getValue($this->studentsTable, "TCKimlikNo");
 
 		$dbi->where("aid", $stdTc);
-		$dbi->where("ySubeKodu", $this->schoolId);
+		//$dbi->where("ySubeKodu", $this->schoolId);
         //$dbi->where("ySubeKodu", $ySubeKodu);
         $dbi->where("lmsUserId", "0", "!=");
-        $getLmsUserId = $dbi->getValue(_USERS_, "lmsUserId");
+        $getLmsUserId = $dbi->getValue($this->usersTable, "lmsUserId");
         
         if(in_array($getLmsUserId, $batchMembers))
         {
@@ -167,18 +195,18 @@ class LMS extends Moodle {
         }
         
         $batchMemberUserId = array();
-        $dbi->join(_PERSONEL_ . " p","p.perID=ct.teacherId", "LEFT");
+        $dbi->join($this->personnelTable . " p","p.perID=ct.teacherId", "LEFT");
         
         $dbi->where("ct.classId", $classId);
         //$dbi->where("ct.schoolId", $ySubeKodu);
-        $dbi->where("ySubeKodu", $this->schoolId);
-        $getTeachers = $dbi->get(_CLASS_TEACHERS_ . " ct", null, "p.tckimlikno");
+        //$dbi->where("ySubeKodu", $this->schoolId);
+        $getTeachers = $dbi->get($this->classTeachersTable . " ct", null, "p.tckimlikno");
         
         foreach($getTeachers as $teacher)
         {
             $dbi->where("aid", $teacher["tckimlikno"]);
             $dbi->where("lmsUserId", "", "!=");
-            $lmsUserIDs = $dbi->get(_USERS_, null, "lmsUserId");
+            $lmsUserIDs = $dbi->get($this->usersTable, null, "lmsUserId");
         
             foreach($lmsUserIDs as $userIds)
             {
@@ -199,38 +227,25 @@ class LMS extends Moodle {
         
     }
     
-    function simsTeacherManuelEnrolInLMS($classId, $lmsCourseId, $lmsBatchId)
+    function simsTeacherManuelEnrolInLMS($lmsCourseId, $lmsBatchId, $userTc)
     {
         global $dbi, $ySubeKodu;
         
-        $manuelEnrolData = array();
-        $dbi->join(_PERSONEL_ . " p","p.perID=ct.teacherId", "LEFT");
+        $dbi->where("aid", $userTc);
+        $dbi->where("lmsUserId", "", "!=");
+        $lmsUserId = $dbi->getValue($this->usersTable, "lmsUserId");
         
-        $dbi->where("ct.classId", $classId);
-        //$dbi->where("ct.schoolId", $ySubeKodu);
-        $dbi->where("ySubeKodu", $this->schoolId);
-        $getTeachers = $dbi->get(_CLASS_TEACHERS_ . " ct", null, "p.tckimlikno");
+        $enrolData = array(
+            'userid'        => $lmsUserId,
+            'courseid'      => $lmsCourseId,
+            'batchid'       => $lmsBatchId,
+            'roleshortname' => "teacher"
+        );
         
-        foreach($getTeachers as $teacher)
-        {
-            $dbi->where("aid", $teacher["tckimlikno"]);
-            $dbi->where("lmsUserId", "", "!=");
-            $lmsUserIDs = $dbi->get(_USERS_, null, "lmsUserId");
-        
-            foreach($lmsUserIDs as $userIds)
-            {
-                $manuelEnrolData[] = array(
-                    'userid'        => $userIds["lmsUserId"],
-                    'courseid'      => $lmsCourseId,
-                    'batchid'       => $lmsBatchId,
-                    'roleshortname' => "teacher"
-                );
-            }
-        }
-        
-        $response = $this->lmsBulkManuelEnrol($manuelEnrolData);
+        $response = $this->lmsManuelEnrol($enrolData);
         
         return $response;
+        
     }
     
     function simsGetLMSCourse()
@@ -279,7 +294,4 @@ class LMS extends Moodle {
     	return $studentNo;
     }
     
-    
-
 }
-

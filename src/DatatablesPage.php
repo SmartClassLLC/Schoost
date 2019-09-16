@@ -17,6 +17,7 @@ class DatatablesPage {
     
     private $boxTag = "div";
     private $boxId = "";
+    private $boxType = "";
     private $boxTitle = "SmartClass";
     private $datatablesHeader = "";
     private $actionsTitle = _ACTIONS;
@@ -24,7 +25,8 @@ class DatatablesPage {
     private $actionButtons = array();
     private $exportButtons = array();
     private $toggleButtons = array();
-    private $settingsButtons = array();
+    private $settingsButton = array();
+    private $printButton = "";
     private $alerts = array();
     private $dtTemplate = "full_table.html";
     private $dtTemplateContent = "";
@@ -113,6 +115,12 @@ class DatatablesPage {
 		$this->dtTemplateContent = $content;
 	}
 
+    /* function */
+	function getPage()
+	{
+		return get_object_vars($this);
+	}
+	
     /* function */
 	function generatePage()
 	{

@@ -289,7 +289,7 @@ class Classes {
 		$dbi->joinWhere(_CLASSES_." c", "FIND_IN_SET(?, c.donemKodu)", array("$this->seasonId"));
 		$dbi->join($classBatches, "cbb.classId=c.dag_id", "LEFT");
 		$dbi->where("t.teacherId", $teacherId);
-		if (!empty($branches)) $dbi->where("c.ders_brans_code",$branches,"IN");
+		if (!empty($branches)) $dbi->where("c.ders_brans_code", $branches, "IN");
 		$dbi->where("t.seasonId", $this->seasonId);
 		$dbi->where("t.schoolId", $ySubeKodu);
 		$dbi->groupBy("t.classId");

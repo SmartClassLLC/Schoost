@@ -231,9 +231,9 @@ class MysqliDb
      * @param string $db
      * @param int $port
      * @param string $charset
-     * @param string $socket
+     * @params string $socket
      */
-    public function __construct($host, $username, $password, $db, $port = null, $charset = 'utf8', $socket = null)
+    public function __construct($host = null, $username = null, $password = null, $db = null, $port = null, $charset = 'utf8', $socket = null)
     {
         $isSubQuery = false;
 
@@ -274,7 +274,7 @@ class MysqliDb
     /**
      * A method to connect to the database
      * 
-     * @throws \Exception
+     * @throws Exception
      * @return void
      */
     public function connect()
@@ -287,7 +287,7 @@ class MysqliDb
             throw new \Exception('MySQL host or socket is not set');
         }
 
-        $this->_mysqli = new \mysqli($this->host, $this->_username, $this->_password, $this->db, $this->port, $this->socket);
+        $this->_mysqli = new mysqli($this->host, $this->_username, $this->_password, $this->db, $this->port, $this->socket);
 
         if ($this->_mysqli->connect_error) {
             throw new \Exception('Connect Error ' . $this->_mysqli->connect_errno . ': ' . $this->_mysqli->connect_error, $this->_mysqli->connect_errno);
@@ -314,9 +314,8 @@ class MysqliDb
 
     /**
      * A method to get mysqli object or create it in case needed
-     *
+     * 
      * @return mysqli
-     * @throws \Exception
      */
     public function mysqli()
     {
@@ -329,7 +328,7 @@ class MysqliDb
     /**
      * A method to change the default database
      *
-     * @throws \Exception
+     * @throws Exception
      * @return void
      */
     public function selectdb($db)
@@ -431,15 +430,14 @@ class MysqliDb
         return $this;
     }
 
-    /**
-     * Pushes a unprepared statement to the mysqli stack.
-     * WARNING: Use with caution.
-     * This method does not escape strings by default so make sure you'll never use it in production.
-     *
-     * @param [[Type]] $query [[Description]]
-     * @throws \Exception
-     * @author Jonas Barascu
-     */
+	/**
+	 * Pushes a unprepared statement to the mysqli stack.
+	 * WARNING: Use with caution.
+	 * This method does not escape strings by default so make sure you'll never use it in production.
+	 * 
+	 * @author Jonas Barascu
+	 * @param [[Type]] $query [[Description]]
+	 */
 	private function queryUnprepared($query)
 	{	
 		// Execute query
@@ -587,7 +585,7 @@ class MysqliDb
         foreach ($options as $option) {
             $option = strtoupper($option);
             if (!in_array($option, $allowedOptions)) {
-                throw new Exception('Wrong query option: ' . $option);
+                throw new \Exception('Wrong query option: ' . $option);
             }
 
             if ($option == 'MYSQLI_NESTJOIN') {
@@ -975,7 +973,7 @@ class MysqliDb
         $joinType = strtoupper(trim($joinType));
 
         if ($joinType && !in_array($joinType, $allowedTypes)) {
-            throw new Exception('Wrong JOIN type: ' . $joinType);
+            throw new \Exception('Wrong JOIN type: ' . $joinType);
         }
 
         if (!is_object($joinTable)) {
@@ -1002,8 +1000,8 @@ class MysqliDb
 	{
 		// We have to check if the file exists
 		if(!file_exists($importFile)) {
-			// Throw an exception
-			throw new Exception("importCSV -> importFile ".$importFile." does not exists!");
+			// Throw an eException
+			throw new \Exception("importCSV -> importFile ".$importFile." does not exists!");
 			return;
 		}
 		
@@ -1066,7 +1064,7 @@ class MysqliDb
 		// We have to check if the file exists
 		if(!file_exists($importFile)) {
 			// Does not exists
-			throw new Exception("loadXml: Import file does not exists");
+			throw new \Exception("loadXml: Import file does not exists");
 			return;
 		}
 		
@@ -1129,7 +1127,7 @@ class MysqliDb
 
 
         if (empty($orderbyDirection) || !in_array($orderbyDirection, $allowedDirection)) {
-            throw new Exception('Wrong order direction: ' . $orderbyDirection);
+            throw new \Exception('Wrong order direction: ' . $orderbyDirection);
         }
 
         if (is_array($customFieldsOrRegExp)) {
@@ -1140,7 +1138,7 @@ class MysqliDb
         }elseif(is_string($customFieldsOrRegExp)){
 	    $orderByField = $orderByField . " REGEXP '" . $customFieldsOrRegExp . "'";
 	}elseif($customFieldsOrRegExp !== null){
-	    throw new Exception('Wrong custom field or Regular Expression: ' . $customFieldsOrRegExp);
+	    throw new \Exception('Wrong custom field or Regular Expression: ' . $customFieldsOrRegExp);
 	}
 
         $this->_orderBy[$orderByField] = $orderbyDirection;
@@ -1184,8 +1182,8 @@ class MysqliDb
 				$this->_tableLockMethod = $method;
 				break;
 			default:
-				// Else throw an exception
-				throw new Exception("Bad lock type: Can be either READ or WRITE");
+				// Else throw an eException
+				throw new \Exception("Bad lock type: Can be either READ or WRITE");
 				break;
 		}
 		return $this;
@@ -1240,7 +1238,7 @@ class MysqliDb
 		}
 		// Something went wrong
 		else {
-			throw new Exception("Locking of table ".$table." failed", $errno);
+			throw new \Exception("Locking of table ".$table." failed", $errno);
 		}
 
 		// Return the success value
@@ -1273,7 +1271,7 @@ class MysqliDb
 		}
 		// Something went wrong
 		else {
-			throw new Exception("Unlocking of tables failed", $errno);
+			throw new \Exception("Unlocking of tables failed", $errno);
 		}
 		
 	
@@ -1487,11 +1485,11 @@ class MysqliDb
      * This helper method takes care of prepared statements' "bind_result method
      * , when the number of variables to pass is unknown.
      *
-     * @param \mysqli_stmt $stmt Equal to the prepared statement object.
+     * @param mysqli_stmt $stmt Equal to the prepared statement object.
      *
      * @return array The results of the SQL fetch.
      */
-    protected function _dynamicBindResults(\mysqli_stmt $stmt)
+    protected function _dynamicBindResults(mysqli_stmt $stmt)
     {
         $parameters = array();
         $results = array();
@@ -1675,7 +1673,7 @@ class MysqliDb
                     }
                     break;
                 default:
-                    throw new Exception("Wrong operation");
+                    throw new \Exception("Wrong operation");
             }
         }
         $this->_query = rtrim($this->_query, ', ');
@@ -2046,7 +2044,7 @@ class MysqliDb
             }
 
             if (!in_array($type, array_keys($types))) {
-                throw new Exception("invalid interval type in '{$diff}'");
+                throw new \Exception("invalid interval type in '{$diff}'");
             }
 
             $func .= " " . $incr . " interval " . $items . " " . $types[$type] . " ";
@@ -2081,7 +2079,7 @@ class MysqliDb
     public function inc($num = 1)
     {
         if (!is_numeric($num)) {
-            throw new Exception('Argument supplied to inc must be a number');
+            throw new \Exception('Argument supplied to inc must be a number');
         }
         return array("[I]" => "+" . $num);
     }
@@ -2096,7 +2094,7 @@ class MysqliDb
     public function dec($num = 1)
     {
         if (!is_numeric($num)) {
-            throw new Exception('Argument supplied to dec must be a number');
+            throw new \Exception('Argument supplied to dec must be a number');
         }
         return array("[I]" => "-" . $num);
     }

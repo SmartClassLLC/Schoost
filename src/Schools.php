@@ -15,7 +15,6 @@ class Schools {
     
     private $campusId = 0;
     private $schoolId = 0;
-    private $noneCampus = false;
     private $campuses = array();
     private $campusInfo = array();
     private $schools = array();
@@ -54,9 +53,11 @@ class Schools {
 	{
         global $dbi;
             
-        $dbi->orderBy("campusTitle", "asc");
+        $dbi->where("parent_id", NULL, "IS");
+        $dbi->where("stype", "campus");
+        $dbi->orderBy("subeAdi", "asc");
 		
-		$this->campuses = $dbi->get(_CAMPUSES_);
+		$this->campuses = $dbi->get(_SUBELER_);
         
 		return $this->campuses;
 	}
@@ -69,7 +70,7 @@ class Schools {
         if(empty($this->campusId)) $this->campusId = $Id;
         
         $dbi->where("Id", $this->campusId);
-		$this->campusInfo = $dbi->getOne(_CAMPUSES_);
+		$this->campusInfo = $dbi->getOne(_SUBELER_);
         
 		return $this->campusInfo;
 	}
@@ -86,7 +87,7 @@ class Schools {
         else
         {
             $myCampusInfo = $this->getCampusInfo($this->campusId);
-            return $myCampusInfo["campusTitle"];
+            return $myCampusInfo["subeAdi"];
         }
     }
 
@@ -96,15 +97,10 @@ class Schools {
         global $dbi, $seasonSchools;
         
         $this->campusId = $campusId;
-        $this->noneCampus = $noneCampus;
 
         $dbi->where("subeID", $seasonSchools, "IN");        
-        
-        if($this->noneCampus) $dbi->where("campusID=? OR campusID=?", array($this->campusId, "0"));
-        else $dbi->where("campusID", $this->campusId);
-    	
+        $dbi->where("parent_id", $this->campusId);
     	$dbi->orderBy("subeAdi", "ASC");
-    	
     	$schoolIds = $dbi->getValue(_SUBELER_, "subeID", null);
         
 		return $schoolIds;
@@ -116,22 +112,11 @@ class Schools {
         global $dbi, $seasonSchools;
         
         $this->campusId = $campusId;
-        $this->noneCampus = $noneCampus;
         
-    	if($this->noneCampus)
-    	{
-			$dbi->where("subeID", $seasonSchools, "IN");
-			$dbi->where("(campusID = ? OR campusID = ?)", array($this->campusId, "0"));
-			$dbi->orderBy("subeAdi", "ASC");
-			$this->schools = $dbi->get(_SUBELER_);
-    	}
-    	else
-    	{
-			$dbi->where("subeID", $seasonSchools, "IN");
-			$dbi->where("campusID", $this->campusId);
-			$dbi->orderBy("subeAdi", "ASC");
-			$this->schools = $dbi->get(_SUBELER_);
-    	}
+		$dbi->where("subeID", $seasonSchools, "IN");
+		$dbi->where("parent_id", $this->campusId);
+		$dbi->orderBy("subeAdi", "ASC");
+		$this->schools = $dbi->get(_SUBELER_);
         
 		return $this->schools;
 	}
@@ -158,7 +143,7 @@ class Schools {
         
         $schoolInfo = $this->getSchoolInfo($this->schoolId);
         
-		return $schoolInfo["campusID"];
+		return $schoolInfo["parent_id"];
 	}
 
     /* function */
@@ -182,29 +167,27 @@ class Schools {
         if($hq) $returnData .= "<".$htmlTag."><a class='sims-campuses-schools sims-hq' href='#' data-id='0' data-title='"._GENEL_MUDURLUK."'><i class='fa fa-fw fa-institution'></i> "._GENEL_MUDURLUK."</a></".$htmlTag.">";
 
         //add campuses
-        $qCampuses = $db->sql_query("SELECT * FROM "._CAMPUSES_." ORDER BY `Id` ASC");
-        while($rCampuses = $db->sql_fetchrow($qCampuses))
+        $dbi->where("parent_id", NULL, "IS");
+        $dbi->where("stype", "campus");
+        $dbi->orderBy("subeID");
+        $campuses = $dbi->get(_SUBELER_);
+
+        foreach($campuses as $campus)
         {
             //echo campus
-            $returnData .= "<".$htmlTag."><a class='sims-campuses-schools sims-campuses' href='#' data-id='".$rCampuses["Id"]."' data-title='".$rCampuses["campusTitle"]."'><i class='fa fa-fw fa-map'></i> ".$rCampuses["campusTitle"]."</a></".$htmlTag.">";
+            $returnData .= "<".$htmlTag."><a class='sims-campuses-schools sims-campuses' href='#' data-id='".$campus["subeID"]."' data-title='".$campus["subeAdi"]."'><i class='fa fa-fw fa-map'></i> ".$campus["subeAdi"]."</a></".$htmlTag.">";
 
             //get schools for the campus
-    	    $qSchools = $db->sql_query("SELECT * FROM "._SUBELER_." WHERE `campusId`='".$rCampuses["Id"]."' ORDER BY `subeID` ASC");
-    	    while($rSchools = $db->sql_fetchrow($qSchools))
+            $dbi->where("parent_id", $campus["subeID"]);
+            $dbi->where("stype", "school");
+            $dbi->orderBy("subeAdi");
+            $campusSchools = $dbi->get(_SUBELER_);
+            
+    	    foreach($campusSchools as $campusSchool)
     	    {
-    	        $returnData .= "<".$htmlTag." style='padding-left: 7px'><a class='sims-campuses-schools sims-schools' href='#' data-id='".$rSchools["subeID"]."' data-title='".$rSchools["subeAdi"]."'><i class='fa fa-fw fa-building-o'></i> ".$rSchools["subeAdi"]."</a></".$htmlTag.">";
+    	        $returnData .= "<".$htmlTag." style='padding-left: 7px'><a class='sims-campuses-schools sims-schools' href='#' data-id='".$campusSchool["subeID"]."' data-title='".$campusSchool["subeAdi"]."'><i class='fa fa-fw fa-building-o'></i> ".$campusSchool["subeAdi"]."</a></".$htmlTag.">";
     	    }            
         }
-        
-        //add none campus schools
-    	if($this->noneCampus)
-    	{
-    	    $qNoneCampuses = $db->sql_query("SELECT * FROM "._SUBELER_." WHERE `campusId`='0' ORDER BY `subeID` ASC");
-    	    while($rNoneCampuses = $db->sql_fetchrow($qNoneCampuses))
-    	    {
-    	        $returnData .= "<".$htmlTag."><a class='sims-campuses-schools sims-schools' href='#' data-id='".$rNoneCampuses["subeID"]."' data-title='".$rNoneCampuses["subeAdi"]."'><i class='fa fa-fw fa-building'></i> ".$rNoneCampuses["subeAdi"]."</a></".$htmlTag.">";
-    	    }
-    	}
         
 		return $returnData;
 	}    

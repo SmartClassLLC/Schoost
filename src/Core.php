@@ -52,13 +52,16 @@ class Core
         
         if($globalUserType == "parent") $this->student_picture = showPhoto($myStudent["Foto"], "", "40px", "sims-dashboard-student img-rounded");
 
+        $isAdmin = Admin();
+        
         //frequent menus
         $dbi->join(_MENUS_. " m", "f.menu_id=m.id", "INNER");
-        if(!Admin()) $dbi->where("m.aktif", "1");
+        if(!$isAdmin) $dbi->where("m.aktif", "1");
         $dbi->where("m.". $globalUserManagerMenu, "on");
         $dbi->where("f.user_id", $userId);
         $dbi->orderBy("numberOfUse", "DESC");
         $this->freqMenus = $dbi->get(_FREQUENT_MENUS_. " f", 10, "f.id AS fId, m.id, m.menu, m.resim, m.url");
+        
         foreach($this->freqMenus as $k => $f)
         {
         	$this->freqMenus[$k]["menuType"] = (strpos($f["url"], "blank") == false) ? "maintab" : "blank";
@@ -321,12 +324,14 @@ class Core
 		//manager type based on school id
 		//$managerMenuType = empty($ySubeKodu) ? (empty($yCampusID) ? "headQuarterMenu" : "campusMenu") : "branchMenu";
 		
+		$isAdmin = Admin();
+		
 		//start query for menus
 		$dbi->where($globalUserManagerMenu, "on");
 		$dbi->where("parent_id", NULL, "IS");
 		
 		//if dev or admin then show all menus else show only active ones
-		if((defined("DEV_MODE") && DEV_MODE == "1") || (Admin() && $_GET["showAllMenus"] == "1")) $dbi->where("aktif", array("0", "1"), "IN");
+		if((defined("DEV_MODE") && DEV_MODE == "1") || ($isAdmin && $_GET["showAllMenus"] == "1")) $dbi->where("aktif", array("0", "1"), "IN");
 		else $dbi->where("aktif", "1");
 		
 		$dbi->orderBy("menuSirasi", "ASC");
@@ -368,7 +373,7 @@ class Core
 			$dbi->where("parent_id", $mainMenu["id"]);
 			
 			//if dev or admin then show all menus else show only active ones
-			if((defined("DEV_MODE") && DEV_MODE == "1") || (Admin() && $_GET["showAllMenus"] == "1")) $dbi->where("aktif", array("0", "1"), "IN");
+			if((defined("DEV_MODE") && DEV_MODE == "1") || ($isAdmin && $_GET["showAllMenus"] == "1")) $dbi->where("aktif", array("0", "1"), "IN");
 			else $dbi->where("aktif", "1");
 			
 			$dbi->orderBy("menuSirasi", "ASC");
@@ -439,7 +444,7 @@ class Core
 						$dbi->where("parent_id", $subMenu["id"]);
 						
 						//if dev or admin then show all menus else show only active ones
-						if((defined("DEV_MODE") && DEV_MODE == "1") || (Admin() && $_GET["showAllMenus"] == "1")) $dbi->where("aktif", array("0", "1"), "IN");
+						if((defined("DEV_MODE") && DEV_MODE == "1") || ($isAdmin && $_GET["showAllMenus"] == "1")) $dbi->where("aktif", array("0", "1"), "IN");
 						else $dbi->where("aktif", "1");
 						
 						$dbi->orderBy("menuSirasi", "ASC");
