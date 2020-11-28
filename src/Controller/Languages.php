@@ -25,7 +25,7 @@ class Languages {
 	{
 		global $dbi;
 
-		$this->languages = $dbi->map("lang_code")->get(_GLOBAL_LANGUAGES_, null, array("lang_code", "lang_name"));		
+		$this->languages = $dbi->map("code")->get(_AVAILABLE_LANGUAGES_, null, array("code", "langName"));		
 
 		return $this->languages;
 	}

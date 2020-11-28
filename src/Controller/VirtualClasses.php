@@ -30,6 +30,15 @@ class VirtualClasses {
 	{
 		return $this->total;
 	}
+	
+	function getTotalClassHour()
+	{
+	    global $dbi, $ySubeKodu;
+	    
+        $sumHour = $dbi->where("schoolId", $ySubeKodu)->getValue(_VIRTUAL_CLASSES_, "SUM(dersSuresi)");
+        
+        return $sumHour;
+	}
     
 	/* function */
 	function getVirtualClasses()

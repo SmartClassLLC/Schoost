@@ -39,12 +39,15 @@ class Personnel {
 	function getAllPersonnel()
 	{
         global $dbi, $ySubeKodu;
+        
+        $dbi->where("stype", "headquarters");
+    	$hqID = $dbi->getValue(_SUBELER_, "subeID");
 		
 		$dbi->join(_PERSONNEL_CATEGORIES_. " c", "a.`cat_code`=c.`cat_id`", "LEFT")
 			->join(_PERSONEL_DEPARTMENTS_. " d", "a.`dep_code`=d.`Id`", "LEFT")
 			->orderBy("a.adi_soyadi", "asc");
 		
-		if($ySubeKodu != "0") $dbi->where("a.SubeKodu", $ySubeKodu);
+		if($ySubeKodu != "0" && $ySubeKodu != $hqID) $dbi->where("a.SubeKodu", $ySubeKodu);
 		
 		$allPersonnel = $dbi->get(_PERSONEL_." a", null, "a.*, c.`cat_name`, d.`depTitle`, d.`depType`");
 
@@ -55,6 +58,9 @@ class Personnel {
 	function getPersonnel($manager = false, $guide = false, $teacher = false, $club = false, $intern = false)
 	{
 		global $dbi, $ySubeKodu;
+		
+		$dbi->where("stype", "headquarters");
+    	$hqID = $dbi->getValue(_SUBELER_, "subeID");
 
 		$whereQuery = array(); $whereValue = array();
 		
@@ -70,7 +76,7 @@ class Personnel {
 		$dbi->where("(". $whereQueryText. ")", $whereValue);
 		$dbi->where("p.aktif", "0", "!=");
 		
-		if($ySubeKodu != "0") $dbi->where("(p.SubeKodu=? OR p.perID IN (SELECT perId FROM " . _PERSONEL_TRANSFER_ . " WHERE transferSchoolId=? AND active=?))", array("$ySubeKodu", "$ySubeKodu", "on"));
+		if($ySubeKodu != "0" && $ySubeKodu != $hqID) $dbi->where("(p.SubeKodu=? OR p.perID IN (SELECT perId FROM " . _PERSONEL_TRANSFER_ . " WHERE transferSchoolId=? AND active=?))", array("$ySubeKodu", "$ySubeKodu", "on"));
 		
 		if(empty($ySubeKodu)) $dbi->orderBy("p.SubeKodu", "asc");
 		
@@ -88,10 +94,15 @@ class Personnel {
 	function getNonAcademicPersonnel()
 	{
 		global $dbi, $ySubeKodu;
-
+		
+		$dbi->where("stype", "headquarters");
+    	$hqID = $dbi->getValue(_SUBELER_, "subeID");
+		
+		if($ySubeKodu != "0" && $ySubeKodu != $hqID) $dbi->where("(SubeKodu=? OR perID IN (SELECT perId FROM " . _PERSONEL_TRANSFER_ . " WHERE transferSchoolId=? AND active=?))", array("$ySubeKodu", "$ySubeKodu", "on"));
+		
 		$dbi->where("(yonetici=? AND rehber=? AND ogretmen=? AND kulup=?)", array("0", "0", "0", "0"));
 		$dbi->where("aktif", "0", "!=");
-		$dbi->where("SubeKodu", $ySubeKodu);
+		//$dbi->where("SubeKodu", $ySubeKodu);
 		$dbi->orderBy("adi_soyadi", "asc");
 		$personnel = $dbi->get(_PERSONEL_);
 		
@@ -101,8 +112,10 @@ class Personnel {
 	/* function */
     function getPersonnelInfo()
     {
-    	global $dbi;
-    	
+    	global $dbi, $dbname2;
+
+    	if (!$dbname2) return [];
+
     	//get personnel info
 		$personnnelInfo = $dbi	->join(_PERSONNEL_CATEGORIES_. " c", "a.`cat_code`=c.`cat_id`", "LEFT")
 								->join(_PERSONEL_DEPARTMENTS_. " d", "a.`dep_code`=d.`Id`", "LEFT")

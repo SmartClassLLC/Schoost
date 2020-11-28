@@ -25,6 +25,7 @@ class LMS extends Moodle {
     private $batchesTable = _BATCHES_;
     private $personnelTable = _PERSONEL_;
     private $classTeachersTable = _CLASS_TEACHERS_;
+    private $lmsConfigTable = _LMS_CONFIG_;
 
     function __construct() {
         parent::__construct();
@@ -113,6 +114,7 @@ class LMS extends Moodle {
         }
         
         return $response;
+    
     }
     
     function simsAssignStdToBatchInLMS($stdId)
@@ -152,8 +154,6 @@ class LMS extends Moodle {
         global $dbi, $ySubeKodu;
         
         $dbi->where("sinifID", $oldBatchId);
-    	//$dbi->where("subeKodu", $ySubeKodu);
-    	//$dbi->where("ySubeKodu", $this->schoolId);
     	$lmsBatchId = $dbi->getValue($this->batchesTable, "lmsBatchId");
 
         $getBatchMembers = $this->lmsGetBatchmembers($lmsBatchId);
@@ -250,7 +250,12 @@ class LMS extends Moodle {
     
     function simsGetLMSCourse()
     {
-        $response = $this->lmsGetCourses();
+        global $dbi, $ySubeKodu;
+        
+        $lmsConfig = $dbi->where("schoolId", $ySubeKodu)->getValue($this->lmsConfigTable, "lms");
+        
+        if($lmsConfig == "moodle") $response = $this->lmscoreCourseGetCourses();
+        else $response = $this->lmsGetCourses();
         
         return $response;
     }

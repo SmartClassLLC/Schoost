@@ -268,6 +268,12 @@ class Classes {
             }
 
 			$classes[$k]["subClasses"] = $subClasses;
+			
+			$dbi->where("branchID", $ySubeKodu);
+	        $moodle = $dbi->getOne(_MOODLE_CONFIG_);
+	        $lms = sizeof($moodle) > 0 ? 1 : 0;
+	        
+	        $classes[$k]["lms"] = $lms;
         }
         
         return array_values($classes); //reindex

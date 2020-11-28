@@ -82,6 +82,7 @@ class Batches {
 	{
         global $dbi, $ySubeKodu;
 
+		/*
 		$dbi->where("subeKodu", $ySubeKodu);
 		if(!empty($courseIds)) {
 			if(!is_array($courseIds)) $courseIds = explode(",", $courseIds);
@@ -89,6 +90,18 @@ class Batches {
 		}
 		$dbi->orderBy("sinifAdi", "asc");
 		$allBatches = $dbi->get(_BATCHES_, null, $fields);
+		*/
+		$dbi->join(_OGRENCI_UCRETLERI_. " g", "b.kursKodu=g.kursID", "LEFT");
+		
+		if(!empty($courseIds)) {
+			if(!is_array($courseIds)) $courseIds = explode(",", $courseIds);
+			$dbi->where("b.kursKodu", $courseIds, "IN");
+		}
+		$dbi->where("g.subeKodu", $ySubeKodu);
+		$dbi->orderBy("g.kursAdi", "asc");
+		$dbi->orderBy("b.sinifAdi", "asc");
+		$allBatches = $dbi->get(_BATCHES_. " b", null, "b.*");
+
 		
 		return $allBatches;
 	}

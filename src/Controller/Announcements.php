@@ -28,7 +28,7 @@ class Announcements {
     /* function */
 	function getAnnouncements($page = 0, $limit = 8)
 	{
-        global $dbi, $ySubeKodu, $aid, $userType, $currentlang, $dashboard, $userStudentInfo, $simsDateTime;
+        global $dbi, $ySubeKodu, $aid, $userType, $currentlang, $dashboard, $userStudentInfo, $simsDateTime, $globalUserManagerType;
         
 		//get announcements
 		if($globalUserManagerType == "parent" || $globalUserManagerType == "student")
@@ -46,7 +46,7 @@ class Announcements {
 		{
 			$dbi->where("FIND_IN_SET(". $userType. ", CAST(`KimGorebilir` AS CHAR))", "0", ">");
 		}
-
+		
 		$dbi->where("SubeKodu", $ySubeKodu);
 		$dbi->where("Aktif", "1");
 		$dbi->orderBy("OnayTarihi", "DESC");

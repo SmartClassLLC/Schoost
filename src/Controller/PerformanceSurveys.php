@@ -18,14 +18,22 @@ class PerformanceSurveys {
 	{
         global $dbi, $ySubeKodu, $aid, $currentlang;
         
-		$dbi->where("schoolId", $ySubeKodu);
-		$dbi->orderBy("name", "asc");
+		$dbi->where("schoolId", array("0", $ySubeKodu), "IN");
+		//$dbi->orderBy("name", "asc");
+		$dbi->orderBy("addDate", "DESC");
 		$surveys = $dbi->get(_PERFORMANCE_SURVEYS_);
 
 		foreach ($surveys as $k => $survey)
 		{
 			//add icon
 			$surveys[$k]["icon"] = (empty($survey["icon"])) ? "file" : $survey["icon"];
+			
+			//surveyType
+			$surveys[$k]["surveyType"] = (empty($survey["surveyType"])) ? "personnel" : $survey["surveyType"];
+			
+			$dbi->where("surveyId", $survey["Id"]);
+			$nofAnsweredStudent = $dbi->getValue(_PERFORMANCE_SURVEYS_ASSIGNMENT_QUESTIONS_STUDENTS_, "COUNT(*)");
+			$surveys[$k]["nofAnsweredStudent"] = empty($nofAnsweredStudent) ? 0 : sizeof($nofAnsweredStudent);
 			
 			//add adder string
 			if(empty($survey["adder"])) $surveys[$k]["adderString"] = "";
@@ -47,7 +55,8 @@ class PerformanceSurveys {
 			$dbi->where("surveyId", $survey["Id"]);
 			$testQuestions = $dbi->get(_PERFORMANCE_SURVEYS_QUESTIONS_);
 			$nofQuestions = empty($testQuestions) ? 0 : sizeof($testQuestions);
-
+			
+			$surveys[$k]["countQuestions"] = empty($testQuestions) ? 0 : sizeof($testQuestions);
 			$surveys[$k]["nofQuestions"] = str_replace(array("{#}"), 
 				array($nofQuestions), _THERE_ARE_X_QUESTIONS_IN_THE_FORM);
 
@@ -59,7 +68,17 @@ class PerformanceSurveys {
 
 			//$sizeOfAnswered = (empty($nofAnswered)) ? 0 : sizeof($nofAnswered);
 			$surveys[$k]["nofAnswered"] = empty($nofAnswered) ? 0 : sizeof($nofAnswered);
-
+			
+			if($ySubeKodu > 0 && $survey["schoolId"] == "0")
+			{
+				$surveys[$k]["surveysHq"] = 0;
+			}
+			else $surveys[$k]["surveysHq"] = 1;
+			
+			$dbi->where("surveyId", $survey["Id"]);
+			$opticDataTemplates = $dbi->get(_PERFORMANCE_SURVEYS_OPTIC_DATA_TEMPLATE_);
+			$surveys[$k]["opticDataTemplate"] = empty($opticDataTemplates) ? 0 : sizeof($opticDataTemplates);
+			
 			/**
 			 * check assignments for students
 			 **/
@@ -90,16 +109,40 @@ class PerformanceSurveys {
 				*/
 				//end of TODO
 
-				if($ySubeKodu > 0) $dbi->where("schoolId", $ySubeKodu);
-				$dbi->where("studentId", $stdIds, "IN");
-				$dbi->where("surveyId", $survey["Id"]);
-				$dbi->where("parentId", "0");
-				$dbi->where("answerId", "0", "!=");
-				$dbi->where("answerPoint", "0", "!=");
-				$answeredStds = $dbi->get(_PERFORMANCE_SURVEYS_ASSIGNED_QUESTIONS_, null, "DISTINCT studentId");
-
 				//nof answered students
-				$nofAnsweredStds = empty($answeredStds) ? 0 : sizeof($answeredStds);
+				if($survey["surveyType"] == "student")
+				{
+					$i = 0;
+					$dbi->where("ogrID", $stdIds, "IN");
+					if($ySubeKodu > 0) $dbi->where("SubeKodu", $ySubeKodu);
+					$studentInfos = $dbi->get(_OGRENCILER_, null, "TCKimlikNo");
+					
+					foreach($studentInfos as $studentInfo)
+					{
+						if($ySubeKodu > 0) $dbi->where("schoolId", $ySubeKodu);
+						$dbi->where("voter", $studentInfo["TCKimlikNo"]);
+						$dbi->where("surveyId", $survey["Id"]);
+						$dbi->where("answerId", "0", "!=");
+						$dbi->where("answerPoint", "0", "!=");
+						$answeredStds = $dbi->getOne(_PERFORMANCE_SURVEYS_ASSIGNMENT_QUESTIONS_STUDENTS_, "voter");
+						
+						if(!empty($answeredStds)) $i++;
+					}
+					
+					$nofAnsweredStds = $i;
+				}
+				else 
+				{
+					if($ySubeKodu > 0) $dbi->where("schoolId", $ySubeKodu);
+					$dbi->where("studentId", $stdIds, "IN");
+					$dbi->where("surveyId", $survey["Id"]);
+					$dbi->where("parentId", "0");
+					$dbi->where("answerId", "0", "!=");
+					$dbi->where("answerPoint", "0", "!=");
+					$answeredStds = $dbi->get(_PERFORMANCE_SURVEYS_ASSIGNED_QUESTIONS_, null, "DISTINCT studentId");
+					
+					$nofAnsweredStds = empty($answeredStds) ? 0 : sizeof($answeredStds);
+				}
 
 				//nof assigned students
 				$surveys[$k]["nofAssignedStds"] = str_replace("{?}", 
@@ -135,17 +178,41 @@ class PerformanceSurveys {
 			//answered parents
 			if(!empty($parentIds))
 			{
-				if($ySubeKodu > 0) $dbi->where("schoolId", $ySubeKodu);
-				//$dbi->where("studentId", $parentIds, "IN");
-				$dbi->where("parentId", $parentIds, "IN");
-				$dbi->where("surveyId", $survey["Id"]);
-				$dbi->where("answerId", "0", "!=");
-				$dbi->where("answerPoint", "0", "!=");
-				$answeredParents = $dbi->get(_PERFORMANCE_SURVEYS_ASSIGNED_QUESTIONS_, null, "DISTINCT(parentId)");
-
 				//nof answered parents
-				$nofAnsweredParents = empty($answeredParents) ? 0 : sizeof($answeredParents);
-
+				if($survey["surveyType"] == "student")
+				{
+					$j = 0;
+					$dbi->where("vID", $parentIds, "IN");
+					if($ySubeKodu > 0) $dbi->where("subeKodu", $ySubeKodu);
+					$parentInfos = $dbi->get(_VELILER_, null, "v_tc_kimlik_no");
+					
+					foreach($parentInfos as $parentInfo)
+					{
+						if($ySubeKodu > 0) $dbi->where("schoolId", $ySubeKodu);
+						$dbi->where("voter", $parentInfo["v_tc_kimlik_no"]);
+						$dbi->where("surveyId", $survey["Id"]);
+						$dbi->where("answerId", "0", "!=");
+						$dbi->where("answerPoint", "0", "!=");
+						$answeredParentsIds = $dbi->getOne(_PERFORMANCE_SURVEYS_ASSIGNMENT_QUESTIONS_STUDENTS_, "voter");
+						
+						if(!empty($answeredParentsIds)) $j++;
+					}
+					
+					$nofAnsweredParents = $j;
+				}
+				else 
+				{
+					if($ySubeKodu > 0) $dbi->where("schoolId", $ySubeKodu);
+					//$dbi->where("studentId", $parentIds, "IN");
+					$dbi->where("parentId", $parentIds, "IN");
+					$dbi->where("surveyId", $survey["Id"]);
+					$dbi->where("answerId", "0", "!=");
+					$dbi->where("answerPoint", "0", "!=");
+					$answeredParents = $dbi->get(_PERFORMANCE_SURVEYS_ASSIGNED_QUESTIONS_, null, "DISTINCT(parentId)");
+					
+					$nofAnsweredParents = empty($answeredParents) ? 0 : sizeof($answeredParents);	
+				}
+				
 				//nof assigned parents
 				$surveys[$k]["nofAssignedParents"] = str_replace("{?}", 
 					$nofAssignedParents, _FORM_WAS_ASSIGNED_TO_X_PARENTS);

@@ -46,11 +46,13 @@ class Moodle implements LmsProvider {
             $moodleSettings = $dbi->getOne($this->configTable);
         }
         
-        if(empty($moodleSettings)) return "noconfig";
-        
         $this->setServerAddress = $moodleSettings["moodleUrl"];
         $this->setToken = $moodleSettings["moodleWsdlToken"];
         $this->setInstitutionKey = $moodleSettings["moodleInsKey"];
+        
+        if(empty($moodleSettings)) return "noconfig";
+        else return $moodleSettings;
+        
 	}
 	
 	function lmsCheckInstution()
@@ -1311,16 +1313,13 @@ class Moodle implements LmsProvider {
         
         $serverurl = $this->setServerAddress . '/webservice/rest/server.php?wstoken=' . $this->setToken . '&wsfunction='.$functionname;
         
-        $resp = $this->postViaCurl($serverurl . $this->restformat, array('cohorts' => array($cohorts)));
+        $resp = $this->postViaCurl($serverurl . $this->restformat, array('cohorts' => $cohorts));
         
         $resp = json_decode($resp);
         
-        if(is_object($resp))
-        {    
-            $convertToArray = json_decode(json_encode($resp), true);
-            return $convertToArray;
-        }
-        else return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -1417,12 +1416,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        if(is_object($resp))
-        {    
-            $convertToArray = json_decode(json_encode($resp), true);
-            return $convertToArray;
-        }
-        else return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -3624,18 +3620,20 @@ class Moodle implements LmsProvider {
      *          )
      * 
      */
-    function lmscoreCourseGetCourses($options)
+    function lmscoreCourseGetCourses($options = array())
     {
 
         $functionname = 'core_course_get_courses';
         
         $serverurl = $this->setServerAddress . '/webservice/rest/server.php?wstoken=' . $this->setToken . '&wsfunction='.$functionname;
         
-        $resp = $this->postViaCurl($serverurl . $this->restformat, array('options' => array($options)));
+        $resp = $this->postViaCurl($serverurl . $this->restformat, array('options' => $options));
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -4037,18 +4035,20 @@ class Moodle implements LmsProvider {
      *          )
      * 
      */
-    function lmscoreEnrolGetEnrolledUsers($courseid, $options)
+    function lmscoreEnrolGetEnrolledUsers($courseid, $options = array())
     {
 
         $functionname = 'core_enrol_get_enrolled_users';
         
         $serverurl = $this->setServerAddress . '/webservice/rest/server.php?wstoken=' . $this->setToken . '&wsfunction='.$functionname;
         
-        $resp = $this->postViaCurl($serverurl . $this->restformat, array('courseid' => $courseid, 'options' => array($options)));
+        $resp = $this->postViaCurl($serverurl . $this->restformat, array('courseid' => $courseid, 'options' => $options));
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -4422,7 +4422,7 @@ class Moodle implements LmsProvider {
      *              )
      * 
      */
-    function lmscoreGradesGetGrades($courseid, $component, $activityid, $userids)
+    function lmscoreGradesGetGrades($courseid, $component = "", $activityid = NULL, $userids = array())
     {
 
         $functionname = 'core_grades_get_grades';
@@ -4433,7 +4433,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -6356,7 +6358,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -6557,7 +6561,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     function lmscoreUserDeleteUsers($userIds)
@@ -6649,7 +6655,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     
@@ -6793,7 +6801,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     
@@ -6899,7 +6909,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -7005,7 +7017,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -7027,7 +7041,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -7049,7 +7065,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -9893,7 +9911,7 @@ class Moodle implements LmsProvider {
      *                  //Preflight required data (like passwords)
      * 
      */
-    function lmsmodQuizGetAttempData($attemptid, $page, $preflightdata)
+    function lmsmodQuizGetAttempData($attemptid, $page = 1, $preflightdata = array())
     {
 
         $functionname = 'mod_quiz_get_attempt_data';
@@ -9904,7 +9922,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -9912,8 +9932,9 @@ class Moodle implements LmsProvider {
      * 
      * [page] => int Varsayılan değer "-1" //page number, empty for all the questions in all the pages
      * 
+     * get exam answer
      */
-    function lmsmodQuizGetAttempReview($attemptid, $page = -1)
+    function lmsmodQuizGetAttempReview($attemptid, $page = null)
     {
 
         $functionname = 'mod_quiz_get_attempt_review';
@@ -9924,7 +9945,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -10042,7 +10065,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -10055,7 +10080,7 @@ class Moodle implements LmsProvider {
      * [includepreviews] => int Varsayılan değer "" //whether to include previews or not
      * 
      */
-    function lmsmodQuizGetUserAttempts($quizid, $userid = 0, $status = "finished", $includepreviews)
+    function lmsmodQuizGetUserAttempts($quizid, $userid = 0, $status = "finished", $includepreviews = null)
     {
 
         $functionname = 'mod_quiz_get_user_attempts';
@@ -10066,7 +10091,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -10192,7 +10219,7 @@ class Moodle implements LmsProvider {
      *                  //Preflight required data (like passwords)
      * 
      */
-    function lmsmodQuizViewAttempt($attemptid, $page, $preflightdata)
+    function lmsmodQuizViewAttempt($attemptid, $page = 1, $preflightdata = array())
     {
 
         $functionname = 'mod_quiz_view_attempt';
@@ -10203,7 +10230,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**
@@ -10221,7 +10250,9 @@ class Moodle implements LmsProvider {
         
         $resp = json_decode($resp);
         
-        return $resp;
+        $convert = $this->objectToArray($resp);
+        
+        return $convert;
     }
     
     /**

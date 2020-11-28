@@ -55,7 +55,9 @@ class Users {
     /* function */
 	function getPersonnelInfo()
 	{
-        global $dbi, $globalZone;
+        global $dbi, $globalZone, $dbname2;
+
+        if (!$dbname2) return [];
 
         if($globalZone == "admin") return false;
         
@@ -67,7 +69,7 @@ class Users {
 		
         //get personnel info
 		$dbi->where("p.tckimlikno", $this->userId);
-		$personnelInfo = $dbi->getOne(_PERSONEL_. " p", "p.*, pc.cat_name as categoryTitle, bt.name as bloodTypeTitle");
+		$personnelInfo = $dbi->getOne($dbname2.".personel". " p", "p.*, pc.cat_name as categoryTitle, bt.name as bloodTypeTitle");
 		
 		if(empty($personnelInfo)) return array();
 		

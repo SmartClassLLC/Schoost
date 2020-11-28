@@ -14,7 +14,7 @@ namespace Schoost;
 class Basics
 {
     public $ySubeKodu = "";
-    public $yCampusID = "";
+    public $isCampus = "";
     public $dbname2 = "";
     public $aid = "";
     public $userType = "";
@@ -29,14 +29,14 @@ class Basics
     public $schoolUrl = "";
     public $schoolSimsUrl = "";
     public $domain = "";
-    public $generalSettings = array();
+    public $configuration = array();
     
 	function __construct()
 	{
-		global $ySubeKodu, $yCampusID, $dbname2, $aid, $userType, $myStudent, $currentSeasonInfo, $globalUserType, $globalUserFolder, $globalUserManagerMenu, $availableLanguages, $currentlang, $generalSettings, $schoolUrl, $schoolSimsUrl, $domain, $globalUserTypeClass;
+		global $ySubeKodu, $isCampus, $dbname2, $aid, $userType, $myStudent, $currentSeasonInfo, $globalUserType, $globalUserFolder, $globalUserManagerMenu, $availableLanguages, $currentlang, $configuration, $schoolUrl, $schoolSimsUrl, $domain, $globalUserTypeClass;
 		
         $this->ySubeKodu = $ySubeKodu;
-        $this->yCampusID = $yCampusID;
+        $this->isCampus = $isCampus;
         $this->dbname2 = $dbname2;
         $this->aid = $aid;
         $this->userType = $userType;
@@ -51,7 +51,7 @@ class Basics
         $this->schoolUrl = $schoolUrl;
         $this->schoolSimsUrl = $schoolSimsUrl;
         $this->domain = $domain;
-        $this->generalSettings = $generalSettings;
+        $this->configuration = $configuration;
 	}
 	
 	function getBasics()

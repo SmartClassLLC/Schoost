@@ -63,7 +63,7 @@ class Login {
 		
 		//remove current cookies
 		unset($_COOKIE['admin']);
-		setcookie("admin", false, time() - (3000 * 24 * 60 * 60), "/", $_SERVER["SERVER_NAME"], true, false);
+		setcookie("user", false, time() - (3000 * 24 * 60 * 60), "/", $_SERVER["SERVER_NAME"], true, false);
 		
 		unset($_COOKIE['userFolder']);
 		setcookie("userFolder", false, time() - (3000 * 24 * 60 * 60), "/", $_SERVER["SERVER_NAME"], true, false);

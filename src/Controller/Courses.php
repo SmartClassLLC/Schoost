@@ -158,4 +158,22 @@ class Courses {
 		
 		return $courses;
 	}
+	
+	function getOldCourses()
+	{
+		global $dbi, $ySubeKodu, $simsDate;
+		
+		$dbi->where("subeKodu", $ySubeKodu);
+		$dbi->where("kursBitis", $simsDate, "<");
+		$dbi->where("kursBitis", "0000-00-00", "!=");
+		$oldCourses = $dbi->get(_OGRENCI_UCRETLERI_);
+		
+		foreach($oldCourses as $k => $oldCourse)
+		{
+			$oldCourses[$k]["kursBaslangicFormatted"] = FormatDateNumeric2Local($oldCourse["kursBaslangic"]);
+			$oldCourses[$k]["kursBitisFormatted"] = FormatDateNumeric2Local($oldCourse["kursBitis"]);
+		}
+					
+		return $oldCourses;
+	}
 }

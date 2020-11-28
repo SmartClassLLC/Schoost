@@ -144,6 +144,18 @@ class Admissions {
 		
 		return $this->interviews;
 	}
+	
+	function getInterviewStudents($field = "*")
+	{
+		global $dbi, $ySubeKodu;
+		
+		//students
+		$dbi->where("subeKodu", $ySubeKodu);
+		$dbi->where("interviewID", NULL, "IS");
+		$getStudents = $dbi->get(_ADMISSION_INTERVIEWS_STUDENTS_, null, $field);
+
+		return $getStudents; 		
+	}
 
 }
 ?>

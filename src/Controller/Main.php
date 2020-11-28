@@ -24,9 +24,10 @@ class Main {
     {
         global $dbi, $ySubeKodu;
 
-		//get config
-		$config = $dbi->getOne(_CONFIG_);
-		$this->config = $config;
+		// Get configuration
+		$dbi->where("schoolId", NULL, "IS");
+		$configuration = $dbi->map("configKey")->get(_CONFIGURATION_, null, "configKey, configValue");
+		$this->config = $configuration;
 		
 		//get school config
 		if(!empty($ySubeKodu))
@@ -55,8 +56,6 @@ class Main {
 		{
 			$this->requestParams[] = "n=". $_GET["n"];
 		}
-		
-		
     }
 
 	/* function */

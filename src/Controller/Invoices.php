@@ -68,7 +68,7 @@ class Invoices {
         $feesTable = empty($feesTable) ? _YAPILAN_UCRETLER_ : $feesTable;
         $busFeesTable = empty($busFeesTable) ? _YAPILAN_SERVIS_UCRETLERI_ : $busFeesTable;
         $discountsTable = empty($discountsTable) ? _YAPILAN_INDIRIMLER_ : $discountsTable;
-        
+
         //set data to empty array
         $this->invoiceData = array();
         
@@ -90,7 +90,7 @@ class Invoices {
 		{
 			foreach ($feeTypes as $k => $feeType)
 			{
-				if(!empty($feeType["showParameter"]) && $this->generalSettings[$feeType["showParameter"]] != "on") unset($feeTypes[$k]);
+				if(!empty($feeType["showParameter"]) && !$this->generalSettings[$feeType["showParameter"]]) unset($feeTypes[$k]);
 			}
 		}
 
@@ -127,11 +127,28 @@ class Invoices {
 	
 			foreach ($feeTypes as $k => $feeType)
 			{
+				/*
+				fee_types tablosunda feeId kolonuna bilgilerin sonuna 'Ucreti' gelecek sekilde kaydedilmis
+				ama yapilan_indirimler tablosuna bu sekilde kaydedilmemis bundan dolayi Ucreti kismini kaldirmamiz gerekiyor
+				
+				if($feeType["feeId"] == "yemekUcreti") $feeType["feeId"] = str_replace("Ucreti", "", $feeType["feeId"]);
+				if($feeType["feeId"] == "egitimUcreti") $feeType["feeId"] = str_replace("Ucreti", "", $feeType["feeId"]);
+				if($feeType["feeId"] == "kahvaltiUcreti") $feeType["feeId"] = str_replace("Ucreti", "", $feeType["feeId"]);
+				if($feeType["feeId"] == "kirtasiyeUcreti") $feeType["feeId"] = str_replace("Ucreti", "", $feeType["feeId"]);
+				if($feeType["feeId"] == "dergiUcreti") $feeType["feeId"] = str_replace("Ucreti", "", $feeType["feeId"]);
+				if($feeType["feeId"] == "yayinUcreti") $feeType["feeId"] = str_replace("Ucreti", "", $feeType["feeId"]);
+				if($feeType["feeId"] == "servisUcreti") $feeType["feeId"] = str_replace("Ucreti", "", $feeType["feeId"]);
+				if($feeType["feeId"] == "kiyafetUcreti") $feeType["feeId"] = str_replace("Ucreti", "", $feeType["feeId"]);
+				if($feeType["feeId"] == "destekUcreti") $feeType["feeId"] = str_replace("Ucreti", "", $feeType["feeId"]);
+				*/
+
 			    //if the fee type is not included then pass it
 			    if(!$this->includeEmpty && empty($studentFees[$feeType["feeTitle"]])) continue;
 	
-	            //calcualte the fee
+	            //calcualte the fee //discountSymbol adinda bit kolon bulunmuyor!!
 				$fee = $studentFees[$feeType["feeTitle"]] - $studentDiscounts[$feeType["discountSymbol"]];
+				
+				//$fee = $studentFees[$feeType["feeTitle"]] - $studentDiscounts[$feeType["feeId"]];
 	
 	            //add fee title and amount to the invoice info			
 				$this->invoiceData[] = array(
