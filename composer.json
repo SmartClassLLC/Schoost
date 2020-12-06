@@ -1,6 +1,6 @@
 {
     "name": "smartclass/schoost",
-    "type": "symfony-bundle",
+    "type": "library",
     "description": "Schoost, school operating system",
     "keywords": ["school", "school management", "sis"],
     "homepage": "https://www.schoost.com",
@@ -13,10 +13,10 @@
     ],
     "require": {
         "php": ">=5.4"
-    },
+    },    
     "autoload": {
         "psr-4" : {
-            "SmartClass\\Bundle\\Schoost\\" : "src/"
+            "Schoost\\" : "src/"
         }
     }
 }
